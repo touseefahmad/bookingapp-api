@@ -1,6 +1,4 @@
 var mongoose = require('mongoose');
-var { User } = require('./user');
-
 
 //modle of hospitals
 var Hospital = mongoose.model('Hospital',{
@@ -15,35 +13,36 @@ var Hospital = mongoose.model('Hospital',{
     default: null,
     required: true
   },
-  parkings:[{
+  parking:[{
     parking_id:{
-      type: Number,
-      required: true
+      type: String,
+      required: true,
+      trim: true
     },
-    registerd_to:{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      default:null
+    registered_to:{
+      type: String,
+      default:null,
+      required:false
     },
-    registered_date:{
-      type: Date,
-      default:null
+    registerd_date:{
+       type : Date,
+       default: null
     },
     start_date:{
-      type: Date,
-      default:null
+       type : Date,
+       default: null
     },
     expiration_date:{
-      type: Date,
-      default:null
+      type : Date,
+      default: null
     },
-    booked_status:{
+    booked_status : {
+      type : Boolean,
+      default : false
+    },
+    confirmed:{
       type: Boolean,
-      default:false
-    },
-    confirmed_status:{
-      type:Boolean,
-      default:false
+      default: false
     }
   }]
 });

@@ -2,11 +2,14 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var { mongoose } = require('./db/mongoose');
 var { User } = require('./models/user');
-var { Hospital } = require('./models/hospital');
+var { Hospital }= require('./models/hospital');
 
-var port = process.env.PORT || 3000;
+var port = process.env.PORT || 5000;
 
 var app = express();
+
+var jsonDate = "1970-01-01T00:00:00.000Z";
+var then = new Date(jsonDate);
 
 app.use(bodyParser.json());
 
@@ -64,7 +67,66 @@ User.find({reg_no: req.body.reg_no}).then((user)=>{
 });
 });
 
+// add hospitals parkings
+app.post('/addHospital',(req,res)=>{
+  console.log('inside adding hospital');
+Hospital.findOne({hospital_name : req.body.hospital_name}).then((hospital)=>{
+  console.log('hospital found:',hospital);
+  if(!hospital){
+    console.log('adding hospital');
+    var hospital =new Hospital({
+      hospital_name : req.body.hospital_name,
+      slots: req.body.slots,
+      parking:[
+      ]
+    });
+    for(var i=0; i<req.body.slots; i++){
+      console.log('inside loop');
+    var parking = {
+      parking_id :i.toString(),
+      registered_to:then,
+      registerd_date:then,
+      start_date:then,
+      expiration_date:then,
+      booked_status:false,
+      confirmed : false
+    };
+    hospital.parking.push(parking);
+  }
 
+
+    hospital.save().then((hospital)=>{
+      res.send({
+        code:200,
+        hospital
+      });
+    },(e)=>{console.log('error adding hospital',e);})
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //////////////////////////
+
+  }else{
+    console.log('user already existed');
+    res.send({
+      code : 400,
+      hospital
+    });
+  }
+},(e)=>{
+  console.log('something went wrong trying adding user');
+});
+});
 //login User
 app.post('/login',(req,res)=>{
   User.findOne({reg_no:req.body.reg_no}).then((user)=>{
@@ -112,65 +174,6 @@ app.post('/login',(req,res)=>{
   });
 });
 });
-
-//create hospitals
-app.post('/create_hospital',(req,res)=>{
-  var hospital =new Hospital({
-    hospital_name : req.body.hospital_name,
-    slots : req.body.slots
-  });
-  // hospital.save().then((doc)=>{
-    for(var index = 0; index < req.body.slots;index++){
-      var Parking = {
-        parking_id: index,
-        registerd_to:null,
-        registered_date:null,
-        start_date:null,
-        expiration_date:null,
-        booked_status:false,
-        confirmed_status:false
-      }
-      hospital.parkings.push(Parking);
-
- }
- hospital.save().then((docs)=>{
-   console.log(JSON.stringify(docs,undefined,2));
-   res.send({
-       code: '200',
-       docs
-     }
-   );
- },(e)=>{
-   console.log("Error while Pushing",e);
-     res.send({
-       code : '400',
-       hospital : {
-         hospital_name : 'null',
-         slots : 0
-       }
- });
-});
-});
-
-//get booking slots
-app.post('/get_slots',(req,res)=>{
-
-  var name = req.body.hospital_name;
-  console.log("query :",name);
-  Hospital.find({hospital_name:name}).then((docs)=>{
-    res.send({
-      code: '200',
-      docs
-    });
-  },(e)=>{
-    console.log('error',e);
-  });
-},(e)=>{
-  //TODO send a model
-  res.status(400).send(e);
-});
-
-
 
 
 app.listen(port,()=>{
